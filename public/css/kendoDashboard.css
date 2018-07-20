@@ -1,0 +1,41 @@
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+.widget {
+  margin-bottom: 10px;
+}
+
+.widget .k-panelbar .k-content {
+  padding: 10px;
+}
+
+.widget.placeholder {
+  opacity: 0.4;
+  border: 1px dashed #a6a6a6;
+}
+
+.widget-centered > * {
+  margin: auto;
+}
+
+#side, #main {
+  min-height: 100px;
+}
+
+#header {
+  position: fixed;
+  top: 0;
+  z-index: 1024;
+  width: 100%;
+}
+
+#dashboard {
+  margin-top: 60px;
+}
+
+.km-navbar {
+  background: #428bca;
+  color: white;
+}

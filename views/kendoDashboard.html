@@ -1,0 +1,180 @@
+<html ng-app="dashApp">
+<head>
+  <meta charset="utf-8">
+  <title>Recording Stats</title>
+
+  <!--REFERENCE - http://developer.telerik.com/featured/customizable-dashboards-angular-kendo-ui-bootstrap/-->
+  <link rel="stylesheet" href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.common-bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.bootstrap.mobile.min.css">
+  <link href="http://getbootstrap.com/dist/css/bootstrap.css" rel="stylesheet" type="text/css" />
+  <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">  
+  <link rel="stylesheet" href="css/kendoDashboard.css" type="text/css" />   
+  
+  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>  
+  <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>   
+  <script src="js/kendoDashboard.js"></script>
+  
+</head>
+  <script src="https://cdn.rawgit.com/kendo-labs/angular-kendo/master/angular-kendo.js"></script>
+<body ng-controller="DashboardController">
+    
+    <header id="header">
+    <div kendo-mobile-nav-bar>
+      <span kendo-mobile-view-title><i class="icon-bar-chart icon-medium">Real Estate Recording Stats</i></span>      
+    </div>
+  </header>
+  
+  <div class="container" id="dashboard">
+    <div class="row">
+                   
+      <!-- side column -->
+      <div kendo-sortable class="col-sm-4 placeholder" id="side"
+           k-connect-with="'#main'" 
+           k-placeholder="placeholder" 
+           k-hint="hint" 
+           k-filter="'.widget'" 
+           k-on-change="dropped(kendoEvent)">
+           
+        <!--http://demos.telerik.com/kendo-ui/linear-gauge/angular-->       
+        <div class="widget">
+          <div kendo-panel-bar>
+            <li class="k-state-active">
+              <span class="k-link k-state-selected">Recorded Invoice Count 
+                  <span id="spanRecordedGauge">{{recordedInvoiceCount}}</span>
+              </span>
+              <div>
+                <h4>Total Recorded Invoices Processed Today</h4>
+                <div id="recordedGauge" kendo-linear-gauge class="chart" 
+                    k-theme="'bootstrap'" 
+                    k-pointer="{ value: 10 }" 
+                    k-scale="{ max: 100, vertical: false }"
+                    k-transitions="false">
+                </div>
+              </div>
+            </li>
+          </div>
+        </div>
+        
+       
+        <div class="widget">
+          <ul kendo-panel-bar>
+            <li class="k-state-active">
+              <span class="k-link k-state-selected">Rejected Invoice Radial
+                  <span id="spanRejectedGauge">{{rejectedInvoiceCount}}</span>
+              </span>
+              <div>
+                <h4>Total Rejected Invoiceuments Processed Today</h4>
+                <!--Customize tooltip for gauge pointer - http://stackoverflow.com/questions/34883782/kendo-ui-radialgauge-add-custom-tool-tip-on-pointer-->
+                <div id="rejectedRadialGauge" kendo-radial-gauge class="chart" 
+                    k-theme="'bootstrap'" 
+                    k-pointer="{ value: 55, color: '#ea7001' }" 
+                    k-scale="{ startAngle: -60, endAngle: 240, min: 0, max: 220, majorUnit: 20, minorUnit: 2 }"
+                    k-transitions="false">
+                 </div>
+              </div>
+            </li>
+          </ul>  
+        </div>
+      
+      <!-- end side column -->
+      </div>
+      
+      <!-- main column -->
+      <div kendo-sortable id="main" class="col-sm-8 placeholder" 
+           k-connect-with="'#side'" 
+           k-placeholder="placeholder" 
+           k-hint="hint" 
+           k-filter="'.widget'" 
+           k-on-change="dropped(kendoEvent)">
+        
+       <div class="widget">
+          <ul kendo-panel-bar>
+            <li class="k-state-active">
+              <span class="k-link k-state-selected">Invoice Status</span>
+              <div>
+                <div kendo-chart 
+                    k-theme="'bootstrap'" 
+                    k-data-source="invoiceStatus" 
+                    k-series-defaults="{ type: 'pie' }" 
+                    k-series="[{ field: 'value', categoryField: 'status', labels: {visible: true}, tooltip: { visible: true, template: '#: category # #: value #' } }]" 
+                    k-title="'Invoice Status'"
+                    k-transitions="false">
+                  </div>
+              </div>
+            </li>
+          </ul> 
+        </div>      
+        
+        <div class="widget">
+          <ul kendo-panel-bar>
+            <li class="k-state-active">
+              <span class="k-link k-state-selected">Daily Invoiceument Status</span>
+              <div>
+                <div kendo-chart class="chart"  
+                    k-theme="'bootstrap'" 
+                    k-series-defaults="{ type: 'column' }" 
+                    k-series="[{ field: 'value', labels: {visible: true}, tooltip: { visible: true, format: '000,' } }]" 
+                    k-value-axis="{ labels: { template: '#: data.value #' } }"                       
+                    k-data-source="status" 
+                    k-category-axis="{ field: 'status', majorGridLines: false }" 
+                    k-title="'Daily Invoiceument Status'"
+                    k-transitions="false">
+                 </div>
+              </div>
+            </li>
+          </ul> 
+        </div>
+        
+        
+        <div class="widget">
+          <ul kendo-panel-bar>
+            <li class="k-state-active">
+              <span class="k-link k-state-selected">Count by Submitter</span>
+              <div>
+                <div kendo-chart 
+                    k-theme="'bootstrap'" 
+                    k-data-source="countBySubmitter" 
+                    k-series-defaults="{ type: 'pie' }" 
+                    k-series="[{ field: 'count', categoryField: 'SubmitterName', labels: {visible: true}, tooltip: { visible: true, template: '#: category # #: value #' } }]" 
+                    k-title="'Count by Submitter'"
+                    k-transitions="false">
+                  </div>
+              </div>
+            </li>
+          </ul> 
+        </div>      
+        
+         <div class="widget">
+          <ul kendo-panel-bar>
+            <li class="k-state-active">
+              <span class="k-link k-state-selected">Count by State</span>
+              <div>
+                <div kendo-chart class="chart"  
+                    k-theme="'bootstrap'" 
+                    k-series-defaults="{ type: 'column' }" 
+                    k-series="[{ field: 'count', labels: {visible: true}, tooltip: { visible: true, format: '000,' } }]" 
+                    k-value-axis="{ labels: { template: '#: data.value #' } }"                       
+                    k-data-source="countByState" 
+                    k-category-axis="{ field: 'State', majorGridLines: false }" 
+                    k-title="'Count by State'"
+                    k-transitions="false">
+                 </div>
+              </div>
+            </li>
+          </ul> 
+        </div>
+        
+      <!-- end main column -->
+      </div>
+      
+    <!-- end row -->
+    </div>
+    
+  <!-- end container -->
+  </div>  
+
+</body>
+</html>
